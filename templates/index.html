@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Calorie Tracker - Home{% endblock %}
+
+{% block content %}
+<section class="py-16 px-4 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">Track Your Calories</h1>
+    <p class="text-xl text-gray-600 mb-8">Monitor your daily intake and reach your health goals</p>
+    <a href="/register" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300 transform hover:-translate-y-1">Get Started</a>
+</section>
+
+<section class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto px-4 pb-16">
+    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
+        <div class="text-accent text-4xl mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-center mb-2">Easy Tracking</h3>
+        <p class="text-gray-600 text-center">Log your meals quickly and efficiently</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
+        <div class="text-accent text-4xl mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-center mb-2">Set Goals</h3>
+        <p class="text-gray-600 text-center">Define your daily calorie goals</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-300">
+        <div class="text-accent text-4xl mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-center mb-2">Monitor Progress</h3>
+        <p class="text-gray-600 text-center">View your history and track your progress</p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Calorie Tracker{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block home_link %}/dashboard{% endblock %}
+
+{% block nav_links %}
+<a href="/history" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">History</a>
+<a href="/nutrition_summary" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Nutrition</a>
+<a href="/export_csv_form" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Export Data</a>
+<a href="/logout" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row items-center justify-between mb-8">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-primary">Welcome, {{ name }}!</h1>
+        <p class="text-gray-600">{{ date }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Calories Consumed</h3>
+        <p class="text-3xl font-bold text-accent">{{ total_calories }}</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Daily Goal</h3>
+        <p class="text-3xl font-bold text-primary-dark">{{ daily_goal }}</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Calories Left</h3>
+        <p class="text-3xl font-bold {% if calories_left >= 0 %}text-primary{% else %}text-error{% endif %}">
+            {% if calories_left >= 0 %}{{ calories_left }}{% else %}-{{ calories_left|abs }}{% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Visual Progress Bar -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Daily Progress</h3>
+    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+        <div class="bg-primary h-4 rounded-full" style="width: {% if (total_calories / daily_goal * 100) > 100 %}100{% else %}{{ (total_calories / daily_goal * 100) }}{% endif %}%"></div>
+    </div>
+    <div class="flex justify-between text-sm text-gray-600">
+        <span>0</span>
+        <span>{{ daily_goal }} cal</span>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Meal Breakdown -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-gray-700 font-semibold mb-4">Today's Meal Breakdown</h3>
+        <div class="h-64">
+            <canvas id="mealChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Week Trend -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-gray-700 font-semibold mb-4">Last 7 Days Trend</h3>
+        <div class="h-64">
+            <canvas id="weekChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Food Log Section -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="flex justify-between items-center border-b p-4">
+                <h2 class="text-xl font-semibold text-gray-800">Today's Food Log</h2>
+            </div>
+            
+            {% if entries %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Food</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calories</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nutrients</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for entry in entries %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ entry.food_name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if entry.meal_type == 'breakfast' %}bg-breakfast text-white
+                                    {% elif entry.meal_type == 'lunch' %}bg-lunch text-white
+                                    {% elif entry.meal_type == 'dinner' %}bg-dinner text-white
+                                    {% else %}bg-snack text-white{% endif %}">
+                                    {{ entry.meal_type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ entry.calories }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {% if entry.nutrients %}
+                                <span class="text-xs">
+                                    {% if entry.nutrients.protein %}P: {{ entry.nutrients.protein }}g{% endif %}
+                                    {% if entry.nutrients.carbs %}{% if entry.nutrients.protein %} • {% endif %}C: {{ entry.nutrients.carbs }}g{% endif %}
+                                    {% if entry.nutrients.fat %}{% if entry.nutrients.protein or entry.nutrients.carbs %} • {% endif %}F: {{ entry.nutrients.fat }}g{% endif %}
+                                </span>
+                                {% else %}
+                                <span class="text-xs text-gray-400">No data</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <form action="/delete_entry/{{ entry._id }}" method="POST" class="inline">
+                                    <button type="submit" class="text-white bg-error hover:bg-red-700 transition duration-300 font-medium rounded-md text-sm px-3 py-1.5">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center p-8 text-gray-500">
+                <p>No food entries for today. Add your first meal!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Add Food Section -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Add Food</h2>
+            
+            <form action="/add_entry" method="POST" class="space-y-4">
+                <div>
+                    <label for="food_name" class="block text-sm font-medium text-gray-700 mb-1">Food Name</label>
+                    <input type="text" id="food_name" name="food_name" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label for="calories" class="block text-sm font-medium text-gray-700 mb-1">Calories</label>
+                    <input type="number" id="calories" name="calories" min="0" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label for="meal_type" class="block text-sm font-medium text-gray-700 mb-1">Meal Type</label>
+                    <select id="meal_type" name="meal_type" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </div>
+                
+                <!-- New Nutrient Fields -->
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Optional Nutrient Information</h3>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label for="protein" class="block text-xs font-medium text-gray-700 mb-1">Protein (g)</label>
+                            <input type="number" id="protein" name="protein" min="0" step="0.1"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="carbs" class="block text-xs font-medium text-gray-700 mb-1">Carbs (g)</label>
+                            <input type="number" id="carbs" name="carbs" min="0" step="0.1"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="fat" class="block text-xs font-medium text-gray-700 mb-1">Fat (g)</label>
+                            <input type="number" id="fat" name="fat" min="0" step="0.1"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" 
+                    class="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300">
+                    Add Food
+                </button>
+            </form>
+            
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Update Daily Goal</h3>
+                <form action="/update_goal" method="POST" class="space-y-4">
+                    <div>
+                        <label for="new_goal" class="block text-sm font-medium text-gray-700 mb-1">New Calorie Goal</label>
+                        <input type="number" id="new_goal" name="new_goal" min="500" value="{{ daily_goal }}" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    
+                    <button type="submit" 
+                        class="w-full bg-accent text-white py-2 px-4 rounded-md hover:bg-orange-600 transition duration-300">
+                        Update Goal
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Parse meal breakdown data
+    const mealData = {
+        breakfast: {{ meal_breakdown.breakfast }},
+        lunch: {{ meal_breakdown.lunch }},
+        dinner: {{ meal_breakdown.dinner }},
+        snack: {{ meal_breakdown.snack }}
+    };
+    
+    // Create meal pie chart
+    const mealCtx = document.getElementById('mealChart').getContext('2d');
+    new Chart(mealCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
+            datasets: [{
+                data: [mealData.breakfast, mealData.lunch, mealData.dinner, mealData.snack],
+                backgroundColor: ['#42A5F5', '#7CB342', '#AB47BC', '#FFA726']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Parse week data
+    const weekData = {{ week_data|safe }};
+    const dates = weekData.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    const calories = weekData.map(item => item.calories);
+    const goalLine = Array(dates.length).fill({{ daily_goal }});
+    
+    // Create week line chart
+    const weekCtx = document.getElementById('weekChart').getContext('2d');
+    new Chart(weekCtx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Calories',
+                    data: calories,
+                    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                    borderColor: '#FF9800',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                },
+                {
+                    label: 'Goal',
+                    data: goalLine,
+                    borderColor: '#4CAF50',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Calories'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        afterBody: function(context) {
+                            const idx = context[0].dataIndex;
+                            if (weekData[idx] && weekData[idx].meals > 0) {
+                                return [
+                                    `Total Meals: ${weekData[idx].meals}`,
+                                    `Avg per Meal: ${weekData[idx].average_per_meal} cal`
+                                ];
+                            }
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

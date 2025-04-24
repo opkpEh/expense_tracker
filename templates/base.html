@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Calorie Tracker{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4CAF50',
+                        'primary-dark': '#388E3C',
+                        accent: '#FF9800',
+                        success: '#4CAF50',
+                        error: '#f44336',
+                        warning: '#FF9800',
+                        breakfast: '#42A5F5',
+                        lunch: '#7CB342',
+                        dinner: '#AB47BC',
+                        snack: '#FFA726',
+                    }
+                }
+            }
+        }
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <header class="bg-primary text-white shadow-md">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold"><a href="{% block home_link %}/{% endblock %}" class="hover:text-gray-200">CalorieTracker</a></div>
+            <div class="nav-links space-x-4">
+                {% block nav_links %}
+                <a href="/login" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Login</a>
+                <a href="/register" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Register</a>
+                {% endblock %}
+            </div>
+        </nav>
+    </header>
+    
+    <main class="container mx-auto px-4 py-8 flex-grow {% block container_class %}{% endblock %}">
+        <div class="flash-messages mb-6">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="p-4 mb-4 rounded {% if category == 'error' %}bg-error{% elif category == 'success' %}bg-success{% else %}bg-warning{% endif %} text-white">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% block footer %}
+    <footer class="bg-primary text-white py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 CalorieTracker App</p>
+        </div>
+    </footer>
+    {% endblock %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

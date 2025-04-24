@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}History - Calorie Tracker{% endblock %}
+
+{% block home_link %}/dashboard{% endblock %}
+
+{% block nav_links %}
+<a href="/dashboard" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Dashboard</a>
+<a href="/logout" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-center mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-primary">Your Calorie History</h1>
+    <a href="/dashboard" class="mt-4 md:mt-0 bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded transition duration-300">
+        Back to Dashboard
+    </a>
+</div>
+
+{% if history %}
+<div class="space-y-8">
+    {% for day in history %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-primary text-white p-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold">{{ day._id }}</h2>
+            <div>
+                {% if day.total_calories <= daily_goal %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Goal Achieved
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Goal Exceeded
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 border-b border-gray-200">
+            <div class="text-center">
+                <p class="text-sm font-medium text-gray-500 uppercase mb-1">Total Calories</p>
+                <p class="text-2xl font-bold text-accent">{{ day.total_calories }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm font-medium text-gray-500 uppercase mb-1">Daily Goal</p>
+                <p class="text-2xl font-bold text-primary-dark">{{ daily_goal }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm font-medium text-gray-500 uppercase mb-1">Difference</p>
+                {% if day.total_calories <= daily_goal %}
+                <p class="text-2xl font-bold text-success">-{{ daily_goal - day.total_calories }}</p>
+                {% else %}
+                <p class="text-2xl font-bold text-error">+{{ day.total_calories - daily_goal }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Food</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calories</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for entry in day.entries %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ entry.food_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if entry.meal_type == 'breakfast' %}bg-breakfast text-white
+                                {% elif entry.meal_type == 'lunch' %}bg-lunch text-white
+                                {% elif entry.meal_type == 'dinner' %}bg-dinner text-white
+                                {% else %}bg-snack text-white{% endif %}">
+                                {{ entry.meal_type }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ entry.calories }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow-md p-8 text-center">
+    <h2 class="text-2xl font-bold text-gray-700 mb-4">No history found</h2>
+    <p class="text-gray-600 mb-6">Start tracking your calories to see your history here!</p>
+    <a href="/dashboard" class="bg-primary hover:bg-primary-dark text-white py-2 px-6 rounded transition duration-300">
+        Go to Dashboard
+    </a>
+</div>
+{% endif %}
+{% endblock %}

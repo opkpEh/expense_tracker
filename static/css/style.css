@@ -1,0 +1,121 @@
+:root {
+    --primary: #4CAF50;
+    --primary-dark: #388E3C;
+    --accent: #FF9800;
+    --light-bg: #f5f5f5;
+    --dark-text: #333;
+    --light-text: #fff;
+    --error: #f44336;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --breakfast: #42A5F5;
+    --lunch: #7CB342;
+    --dinner: #AB47BC;
+    --snack: #FFA726;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    background-color: var(--primary);
+    color: var(--light-text);
+    padding: 20px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo a {
+    color: var(--light-text);
+    text-decoration: none;
+}
+
+.nav-links a {
+    color: var(--light-text);
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 8px 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-links a:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn {
+    display: inline-block;
+    background-color: var(--primary);
+    color: var(--light-text);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-accent {
+    background-color: var(--accent);
+}
+
+footer {
+    background-color: var(--primary);
+    color: var(--light-text);
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+.flash-messages {
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.flash-message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.flash-message.error {
+    background-color: var(--error);
+    color: white;
+}
+
+.flash-message.success {
+    background-color: var(--success);
+    color: white;
+}

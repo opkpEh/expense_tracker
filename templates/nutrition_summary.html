@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Nutrition Summary - Calorie Tracker{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block home_link %}/dashboard{% endblock %}
+
+{% block nav_links %}
+<a href="/dashboard" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Dashboard</a>
+<a href="/history" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">History</a>
+<a href="/logout" class="px-4 py-2 rounded hover:bg-primary-dark transition duration-300">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-center mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-primary">Nutrition Summary</h1>
+    <div class="mt-4 md:mt-0">
+        <form action="/nutrition_summary" method="GET" class="flex flex-wrap gap-2">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required
+                    class="mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required
+                    class="mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div class="self-end">
+                <button type="submit" class="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded transition duration-300">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Avg. Daily Calories</h3>
+        <p class="text-3xl font-bold text-accent">{{ avg_calories }}</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Avg. Protein (g)</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ avg_protein }}</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Avg. Carbs (g)</h3>
+        <p class="text-3xl font-bold text-green-600">{{ avg_carbs }}</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <h3 class="text-gray-600 text-sm font-medium uppercase mb-2">Avg. Fat (g)</h3>
+        <p class="text-3xl font-bold text-yellow-600">{{ avg_fat }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Macro Breakdown Pie Chart -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-gray-700 font-semibold mb-4">Macronutrient Breakdown</h3>
+        <div class="h-64">
+            <canvas id="macroChart"></canvas>
+        </div>
+        <div class="mt-4 grid grid-cols-3 text-center">
+            <div>
+                <span class="block text-sm text-gray-500">Protein</span>
+                <span class="font-semibold">{{ protein_pct }}%</span>
+            </div>
+            <div>
+                <span class="block text-sm text-gray-500">Carbs</span>
+                <span class="font-semibold">{{ carbs_pct }}%</span>
+            </div>
+            <div>
+                <span class="block text-sm text-gray-500">Fat</span>
+                <span class="font-semibold">{{ fat_pct }}%</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Daily Nutrient Chart -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-gray-700 font-semibold mb-4">Daily Nutrient Intake</h3>
+        <div class="h-64">
+            <canvas id="nutrientChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Nutrient Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+    <div class="flex justify-between items-center border-b p-4">
+        <h2 class="text-xl font-semibold text-gray-800">Daily Nutrient Breakdown</h2>
+    </div>
+    
+    {% if nutrient_data %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calories</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protein (g)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Carbs (g)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fat (g)</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for day in nutrient_data %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ day._id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ day.total_calories }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ day.total_protein|round(1) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ day.total_carbs|round(1) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ day.total_fat|round(1) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center p-8 text-gray-500">
+        <p>No nutrition data available for the selected date range.</p>
+        <p class="mt-2">Try adding food entries with nutrient information.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Parse nutrient data
+    const chartData = {{ chart_data|safe }};
+    
+    // Format dates for display
+    const dates = chartData.map(item => {
+        const date = new Date(item._id);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    // Create arrays for nutrient values
+    const caloriesData = chartData.map(item => item.total_calories);
+    const proteinData = chartData.map(item => item.total_protein);
+    const carbsData = chartData.map(item => item.total_carbs);
+    const fatData = chartData.map(item => item.total_fat);
+    
+    // Macro pie chart
+    const macroCtx = document.getElementById('macroChart').getContext('2d');
+    new Chart(macroCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Protein', 'Carbs', 'Fat'],
+            datasets: [{
+                data: [{{ protein_pct }}, {{ carbs_pct }}, {{ fat_pct }}],
+                backgroundColor: ['#3B82F6', '#10B981', '#F59E0B']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.raw.toFixed(1) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Nutrient line chart
+    const nutrientCtx = document.getElementById('nutrientChart').getContext('2d');
+    new Chart(nutrientCtx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Protein (g)',
+                    data: proteinData,
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true
+                },
+                {
+                    label: 'Carbs (g)',
+                    data: carbsData,
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    fill: true
+                },
+                {
+                    label: 'Fat (g)',
+                    data: fatData,
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Grams'
+                    }
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            }
+        }
+    });
+</script>
+{% endblock %}
